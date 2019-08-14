@@ -296,20 +296,15 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
 
         if ($customerId) {
             try {
-                $model = Mage::getModel('wishlist/wishlist')
-                    ->loadByCustomer($customerId);
-
-                $collection = $model->getProductCollection()
-                    ->addAttributeToSelect('name')
-                    ->addAttributeToSelect('sku')
-                    ->addAttributeToSelect('price')
-                    ->addAttributeToSelect('image')
-                    ->addAttributeToSelect('url_path')
-                    ->addAttributeToSelect('status');
-
-                foreach ($collection as $wishlist) {
-                    $returnData[] = $this->convertAttributeData($wishlist);
+                $model = Mage::getModel('wishlist/wishlist')->loadByCustomer($customerId, true);
+                $wishlist = Mage::getModel('wishlist/wishlist')->loadByCustomer($customerId, true); 
+                $wishListItemCollection = $wishlist->getItemCollection();
+               
+                foreach ($wishListItemCollection as $item)
+                {
+                	 $returnData[]['name']= $item->getName();  // Get Product Name
                 }
+       
             } catch (Exception $e) {
                 $returnData['error'] = self::ERROR_CODE_UNSUPPORTED_FEATURE;
             }

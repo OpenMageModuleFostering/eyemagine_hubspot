@@ -204,7 +204,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
     		$request       = $this->getRequest();
      		$maxperpage    = $request->getParam('maxperpage', self::MAX_SUBSCRIBER_PERPAGE);
     		$lastSubscriberId = $request->getParam('id', '0');
-    		$start         =  $request->getParam('start')?date('Y-m-d H:i:s', $request->getParam('start')):'0000-00-00 00:00:00';
+    		$start         =  $request->getParam('start')?date('Y-m-d H:i:s', $request->getParam('start')):'0';
     		$end           = date('Y-m-d H:i:s', time() - 300);
     		$websiteId     = Mage::app()->getWebsite()->getId();
     		$store         = Mage::app()->getStore();
@@ -213,21 +213,21 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
     		$subscriberData    = array();
 
     		//setup the query and page size
+    	 	if($start){
+     	 		$collection->addFieldToFilter('change_status_at', array(
+    	 			array('from' => $start,
+    	 					'to'   => $end,
+    	 					'date' => true)
+     	 		));
+       		}
     
-    		$collection->addFieldToFilter(
-    				
-    				'change_status_at', array(
-    				array('from' => $start,
-    				'to'   => $end,
-    				'date' => true),
-     				array('null' => true)
-    		
-    		))
-    		->addFieldToFilter('subscriber_email', array('like' => '%@%'))
+    		$collection->addFieldToFilter('subscriber_email', array('like' => '%@%'))
+    		    		
     		->addFieldToFilter('subscriber_id', array('gt' => $lastSubscriberId))
      		->setOrder('change_status_at', Varien_Data_Collection::SORT_ORDER_ASC)
     		->setOrder('subscriber_id', Varien_Data_Collection::SORT_ORDER_ASC)
     		->setPageSize($maxperpage);
+    	
     
     		// only add the filter if store id > 0
     		if ($storeId) {
