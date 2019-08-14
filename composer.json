@@ -1,14 +1,14 @@
 {
     "name": "OpenMageModuleFostering/Eyemagine_HubSpot",
     "type": "magento-module",
-    "license": "Academic-Free-License-(AFL)",
+    "license": "Custom",
     "homepage": "",
-    "description": "Integration with Magento and HubSpot which syncs Magento customers with HubSpot
-Contacts along with customer attributes, order history, abandoned carts, recent
+    "description": "Integration with Magento and HubSpot which syncs Magento customers with HubSpot&#xD;
+Contacts along with customer attributes, order history, abandoned carts, recent&#xD;
 history, and lifetime statistics.",
     "authors": [
     {
-        "name": "Andy",
+        "name": "EYEMAGINE",
         "email": "andy@eyemaginetech.com"
     }
 ],

@@ -8,7 +8,7 @@
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
  * @copyright Copyright (c) 2013 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
- * @license   http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
+ * @license   http://www.eyemaginetech.com/license.txt
  */
 
 class Eyemagine_HubSpot_Block_Adminhtml_Frontend_Utk

@@ -8,7 +8,7 @@
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
  * @copyright Copyright (c) 2013 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
- * @license   http://opensource.org/licenses/afl-3.0.php Academic Free License (AFL 3.0)
+ * @license   http://www.eyemaginetech.com/license.txt
  */
 
 /**
@@ -25,15 +25,38 @@ class Eyemagine_HubSpot_LinkController extends Mage_Core_Controller_Front_Action
         $searchQuery    = $this->getRequest()->getParam('q');
         $product        = $this->_initProduct();
         $url            = null;
-        $permanente     = false;
+        $permanent      = false;
         
-        // load the product if it exists
+        // use the loaded product if it exists
         if ($product) {
+
             $helper  = Mage::helper('catalog/product');
-            
+
+            // if the product is visible, use it's URL, otherwise load the parent's URL
             if ($helper->canShow($product)) {
-                $url        = $helper->getProductUrl($product);
-                $permanente = true;
+
+                $url = $helper->getProductUrl($product);
+                $permanent = true;
+
+            } elseif ($product->getTypeId() == Mage_Catalog_Model_Product_Type::TYPE_SIMPLE) {
+
+                // find the simple product's first parent in grouped product types
+                $parentIds = Mage::getModel('catalog/product_type_grouped')
+                        ->getParentIdsByChild($product->getId());
+
+                // if no grouped parents were found, find configurable parent IDs
+                if (!$parentIds) {
+                    $parentIds = Mage::getModel('catalog/product_type_configurable')
+                        ->getParentIdsByChild($product->getId());
+                }
+
+                // if a parent ID is found, load it and use its URL
+                if (isset($parentIds[0])) {
+                	
+                    $this->getRequest()->setParam('id', $parentIds[0]);
+                    $parent = $this->_initProduct();
+                    $url = $helper->getProductUrl($parent);
+                }
             }
         }
         
@@ -57,7 +80,7 @@ class Eyemagine_HubSpot_LinkController extends Mage_Core_Controller_Front_Action
         
         // finally send the url redirect
         Mage::app()->getResponse()
-            ->setRedirect($url, ($permanente) ? 301 : 302)
+            ->setRedirect($url, ($permanent) ? 301 : 302)
             ->sendResponse();
     }
     
@@ -146,6 +169,16 @@ class Eyemagine_HubSpot_LinkController extends Mage_Core_Controller_Front_Action
             $product = Mage::getModel('catalog/product');
         }
         
+        // compare current store ID with website IDs that the product is assigned to
+        $storeId = $product->getStoreId();
+        $websiteIds = $product->getWebsiteIds();
+        
+        // if the product is not in the current store, change the store ID
+        if (!in_array($storeId, $websiteIds)) {
+        
+        	$product->setStoreId($websiteIds[0]);
+        }
+
         return $product;
     }
 }
