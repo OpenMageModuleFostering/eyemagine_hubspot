@@ -24,7 +24,7 @@ class Eyemagine_HubSpot_Block_Adminhtml_Frontend_Eyemagine_Info
     public function render(Varien_Data_Form_Element_Abstract $element)
     {
         $useContainerId = $element->getData('use_container_id');
-        $remoteHtml     = @file_get_contents('http://www.eyemaginetech.com/canvas/info/eyehubspot.php');
+        $remoteHtml     = @file_get_contents('http://www.hubspotintegration.com/canvas/info/eyehubspot.php');
 
         if ($remoteHtml) {
             return sprintf(

@@ -223,6 +223,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
      				array('null' => true)
     		
     		))
+    		->addFieldToFilter('subscriber_email', array('like' => '%@%'))
     		->addFieldToFilter('subscriber_id', array('gt' => $lastSubscriberId))
      		->setOrder('change_status_at', Varien_Data_Collection::SORT_ORDER_ASC)
     		->setOrder('subscriber_id', Varien_Data_Collection::SORT_ORDER_ASC)
