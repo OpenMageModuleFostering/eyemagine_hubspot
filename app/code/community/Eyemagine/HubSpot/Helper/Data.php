@@ -61,6 +61,27 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
         return $result;
     }
 
+    /**
+     * Get stores data
+     *
+     * @return array
+     */
+    public function getStores()
+    {
+        foreach (Mage::app()->getStores(true, true) as $store) {
+           
+	    $storeId = $store->getId();
+
+            $result[$storeId] = array(
+                'store_id' => $storeId,
+                'website_id' => $store->getWebsiteId(),
+                'store_url' => $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB),
+                'media_url' => $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA)
+            );
+        }
+        return $result;
+    }
+
 
     /**
      * Convert the object values to associative array

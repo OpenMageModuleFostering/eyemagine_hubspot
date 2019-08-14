@@ -43,6 +43,34 @@ COMPATIBILITY:
 -------------------------------------------------------------------------------
 RELEASE NOTES:
 -------------------------------------------------------------------------------
+v.1.1.5: Sep 8, 2016
+- Fixed product and media url for multistores.
+- Optimized performance for order data. 
+
+v.1.1.4: July 5, 2016:
+- Added workaround for syncing data without timestamp. 
+
+v.1.1.3: June 14, 2016:
+- Fixed performance issue for abandoned cart data.
+- Fixed notification message for unavailable products.
+- Added multi-store support. 
+
+v.1.1.2: Dec 04, 2015:
+- Fixed wishlist syncing.
+- Fixed newsletter syncing.
+
+v.1.1.1: Oct 05, 2015:
+- Fixed 404 error message. 
+
+v.1.1.0: Sep 11, 2015:
+- Added sync for newsletter subscribers.
+- Fixed sync for the address data.
+
+v.1.0.5: Aug 31, 2015:
+- Fixed product image display related issue 
+
+v.1.0.3: July 7, 2014
+- Fixed package definition 
 
 v.1.0.2: July 7, 2014
   - Added redirects for invisible simple products

@@ -142,10 +142,11 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
             $entityId = $request->getParam('id', '0');
             $websiteId     = Mage::app()->getWebsite()->getId();
             $store         = Mage::app()->getStore();
+            $stores         = $helper->getStores();
             $storeId       = Mage::app()->getStore()->getId();
             $custGroups    = $helper->getCustomerGroups();
             $collection    = Mage::getModel('sales/order')->getCollection();
-            $ordersData    = array();
+            $ordersData    = array();            
 
             // setup the query and page size
             $collection->addFieldToFilter('updated_at', array(
@@ -171,9 +172,9 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
                 $groupId      = (int)$order->getCustomerGroupId();
 
                 $result['customer_group']   = (isset($custGroups[$groupId])) ? $custGroups[$groupId] : 'Guest';
-                $result['website_id']       = $websiteId;
-                $result['store_url']        = $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
-                $result['media_url']        = $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA);
+                $result['website_id']       = (isset($stores[$result['store_id']]['website_id']))?  $stores[$result['store_id']]['website_id']: $websiteId;
+                $result['store_url']        = (isset($stores[$result['store_id']]['store_url']))?  $stores[$result['store_id']]['store_url']: $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
+                $result['media_url']        = (isset($stores[$result['store_id']]['media_url']))?  $stores[$result['store_id']]['media_url']:$store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA);            
                 $result['shipping_address'] = $helper->convertAttributeData($order->getShippingAddress());
                 $result['billing_address']  = $helper->convertAttributeData($order->getBillingAddress());
                 $result['items']            = array();
@@ -196,8 +197,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
 
         $this->_outputJson(array(
             'orders'        => $ordersData,
-            'website'       => $websiteId,
-            'store'         => $storeId
+            'stores'         => $stores
         ));
     }
     
@@ -290,6 +290,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
     		$end           = date('Y-m-d H:i:s', time() - $request->getParam('offset', self::IS_ABANDONED_IN_SECS));
     		$websiteId     = Mage::app()->getWebsite()->getId();
     		$store         = Mage::app()->getStore();
+    		$stores        = $helper->getStores();
     		$storeId       = Mage::app()->getStore()->getId();
     		$custGroups    = $helper->getCustomerGroups();
     		$collection    = Mage::getModel('sales/quote')->getCollection();
@@ -322,10 +323,10 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
     				$result['customer_group'] = 'Guest';
     			}
     
-    			$result['website_id']       = $websiteId;
-    			$result['store_url']        = $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
-    			$result['media_url']        = $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA);
-    			$result['shipping_address'] = $helper->convertAttributeData($cart->getShippingAddress());
+    			$result['website_id']       = (isset($stores[$result['store_id']]['website_id']))?  $stores[$result['store_id']]['website_id']: $websiteId;
+                $result['store_url']        = (isset($stores[$result['store_id']]['store_url']))?  $stores[$result['store_id']]['store_url']: $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
+                $result['media_url']        = (isset($stores[$result['store_id']]['media_url']))?  $stores[$result['store_id']]['media_url']:$store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA);            
+                $result['shipping_address'] = $helper->convertAttributeData($cart->getShippingAddress());
     			$result['billing_address']  = $helper->convertAttributeData($cart->getBillingAddress());
     			$result['items']            = array();
     
@@ -360,8 +361,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
     
     	$this->_outputJson(array(
     			'abandoned'     => $returnData,
-    			'website'       => $websiteId,
-    			'store'         => $storeId
+    			'stores'         => $stores
     	));
     }
     /**
