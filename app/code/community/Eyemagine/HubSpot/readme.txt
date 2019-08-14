@@ -6,7 +6,7 @@
  * @author    EYEMAGINE <magento@eyemaginetech.com>
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
- * @copyright Copyright (c) 2013 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
+ * @copyright Copyright (c) 2015 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
  * @license   http://www.eyemaginetech.com/license.txt
  */
 
@@ -49,10 +49,10 @@ v.1.0.2: July 7, 2014
   - Added redirects for products in different stores/websites
 
   
-v.1.0.1: September 5, 2013
+v.1.0.1: September 5, 2015
   - Added controllers to handle product urls and images
   - Added redirect to search results page for name when product is not available
   - Minor bug fixes
   
-v.1.0.0: July 8, 2013
+v.1.0.0: July 8, 2015
   - Initial release.

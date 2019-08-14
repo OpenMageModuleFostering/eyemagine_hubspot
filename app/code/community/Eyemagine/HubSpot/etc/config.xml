@@ -8,14 +8,14 @@
  * @author    EYEMAGINE <magento@eyemaginetech.com>
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
- * @copyright Copyright (c) 2013 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
+ * @copyright Copyright (c) 2015 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
  * @license   http://www.eyemaginetech.com/license.txt
  */
 -->
 <config>
     <modules>
         <Eyemagine_HubSpot>
-            <version>1.0.3</version>
+            <version>1.1.0</version>
         </Eyemagine_HubSpot>
     </modules>
     <global>
@@ -58,6 +58,17 @@
                     </eyehubspot>
                 </observers>
             </sales_convert_quote_to_order>
+            
+            <newsletter_subscriber_save_before>
+                <observers>
+                    <eyehubspot>
+                       
+                        <class>eyehubspot/observer</class>
+                        <method>setChangeStatusAt</method>
+                     </eyehubspot>
+                </observers>
+            </newsletter_subscriber_save_before>
+   
         </events>
     </global>
     <admin>

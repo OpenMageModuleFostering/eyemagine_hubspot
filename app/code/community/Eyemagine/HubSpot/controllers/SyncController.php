@@ -7,7 +7,7 @@
  * @author    EYEMAGINE <magento@eyemaginetech.com>
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
- * @copyright Copyright (c) 2013 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
+ * @copyright Copyright (c) 2015 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
  * @license   http://www.eyemaginetech.com/license.txt
  */
 
@@ -33,6 +33,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
      * preset values definitions
      */
     const MAX_CUSTOMER_PERPAGE                 = 100;
+    const MAX_SUBSCRIBER_PERPAGE               = 100;
     const MAX_ORDER_PERPAGE                    = 20;
     const MAX_ASSOC_PRODUCT_LIMIT              = 10;
     const IS_ABANDONED_IN_SECS                 = 3600;
@@ -187,6 +188,73 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
             'store'         => $storeId
         ));
     }
+    
+    
+    
+    /**
+     * Get newsletter subscribers data
+     */
+    public function getsubscribersAction()
+    {
+    	if (!$this->_authenticate()) {
+    		return;
+    	}
+    
+    	try {
+    		$request       = $this->getRequest();
+     		$maxperpage    = $request->getParam('maxperpage', self::MAX_SUBSCRIBER_PERPAGE);
+    		$lastSubscriberId = $request->getParam('id', '0');
+    		$start         =  $request->getParam('start')?date('Y-m-d H:i:s', $request->getParam('start')):'0000-00-00 00:00:00';
+    		$end           = date('Y-m-d H:i:s', time() - 300);
+    		$websiteId     = Mage::app()->getWebsite()->getId();
+    		$store         = Mage::app()->getStore();
+    		$storeId       = Mage::app()->getStore()->getId();
+    		$collection    = Mage::getModel('newsletter/subscriber')->getCollection();
+    		$subscriberData    = array();
+
+    		//setup the query and page size
+    
+    		$collection->addFieldToFilter(
+    				
+    				'change_status_at', array(
+    				array('from' => $start,
+    				'to'   => $end,
+    				'date' => true),
+     				array('null' => true)
+    		
+    		))
+    		->addFieldToFilter('subscriber_id', array('gt' => $lastSubscriberId))
+     		->setOrder('change_status_at', Varien_Data_Collection::SORT_ORDER_ASC)
+    		->setOrder('subscriber_id', Varien_Data_Collection::SORT_ORDER_ASC)
+    		->setPageSize($maxperpage);
+    
+    		// only add the filter if store id > 0
+    		if ($storeId) {
+    			$collection->addFieldToFilter('store_id', array('eq' => $storeId));
+    		}
+    
+    		
+    		foreach ($collection as $subscriber) {
+    			
+    			$subscriberData[$subscriber->getId()] = $subscriber->getData();
+    			
+    		}
+    	} catch (Exception $e) {
+    		$this->_outputError(
+    				self::ERROR_CODE_UNKNOWN_EXCEPTION,
+    				'Unknown exception on request',
+    				$e
+    		);
+    		return;
+    	}
+    
+    	$this->_outputJson(array(
+    			'subscribers'   => $subscriberData,
+    			'website'       => $websiteId,
+    			'store'         => $storeId
+    	));
+    }
+    
 
 
     /**

@@ -7,7 +7,7 @@
  * @author    EYEMAGINE <magento@eyemaginetech.com>
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
- * @copyright Copyright (c) 2013 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
+ * @copyright Copyright (c) 2015 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
  * @license   http://www.eyemaginetech.com/license.txt
  */
 
@@ -55,5 +55,19 @@ class Eyemagine_HubSpot_Model_Observer
         $order->setHubspotUserToken($quote->getHubspotUserToken());
 
         return $this;
+    }
+    
+    /**
+     * Insert/Update change_status_at field
+     *
+     * Event: newsletter_subscriber_save_before
+     *
+     * @param  Varien_Event_Observer $observer
+     * @return Eyemagine_HubSpot_Model_Observer
+     */
+
+    public function setChangeStatusAt(Varien_Event_Observer $observer) {
+    	$subscriber = $observer->getSubscriber();
+    	$subscriber['change_status_at'] = (date("Y-m-d H:i:s", time()));
     }
 }
