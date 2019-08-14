@@ -89,21 +89,22 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
      * @param  Varien_Object|array $input
      * @return array
      */
-    public function convertAttributeData($input)
-    {
+     public function convertAttributeData($input, $level=0)
+     {
         $result = array();
+        $level++;
 
         if (is_object($input) && $input instanceof Varien_Object) {
             foreach ($input->getData() as $attribute => $value) {
-                if (is_object($value) || is_array($value)) {
-                    $result[$attribute] = $this->convertAttributeData($value);
+                if ((is_object($value) && $level <2) || is_array($value)) {
+                    $result[$attribute] = $this->convertAttributeData($value, $level);
                 } else {
                     $result[$attribute] = $value;
                 }
             }
         } elseif (is_array($input)) {
             foreach ($input as $k => $v) {
-                $result[$k] = $this->convertAttributeData($v);
+                $result[$k] = $this->convertAttributeData($v, $level);
             }
         } else {
             return $input;
