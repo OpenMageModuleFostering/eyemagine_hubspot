@@ -7,7 +7,7 @@
  * @author    EYEMAGINE <magento@eyemaginetech.com>
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
- * @copyright Copyright (c) 2015 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
+ * @copyright Copyright (c) 2016 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
  * @license   http://www.eyemaginetech.com/license.txt
  */
 
@@ -74,7 +74,7 @@ class Eyemagine_HubSpot_LinkController extends Mage_Core_Controller_Front_Action
             }
             
             // adds message that the product is unavailable
-            $session = Mage::getSingleton('checkout/session');
+            $session = Mage::getSingleton('core/session');
             $session->addNotice(Mage::getStoreConfig('eyehubspot/settings/unavailable_msg'));
         }
         
@@ -168,17 +168,17 @@ class Eyemagine_HubSpot_LinkController extends Mage_Core_Controller_Front_Action
         } elseif (!$nullIfNoLoad && !$product) {
             $product = Mage::getModel('catalog/product');
         }
-        
-        // compare current store ID with website IDs that the product is assigned to
-        $storeId = $product->getStoreId();
-        $websiteIds = $product->getWebsiteIds();
-        
-        // if the product is not in the current store, change the store ID
-        if (!in_array($storeId, $websiteIds)) {
-        
-        	$product->setStoreId($websiteIds[0]);
-        }
-
+        if ($product){
+	        // compare current store ID with website IDs that the product is assigned to
+	        $storeId = $product->getStoreId();
+	        $websiteIds = $product->getWebsiteIds();
+	        
+	        // if the product is not in the current store, change the store ID
+	        if (!in_array($storeId, $websiteIds)) {
+	        
+	        	$product->setStoreId($websiteIds[0]);
+	        }
+         }
         return $product;
     }
 }

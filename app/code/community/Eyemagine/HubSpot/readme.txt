@@ -6,7 +6,7 @@
  * @author    EYEMAGINE <magento@eyemaginetech.com>
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
- * @copyright Copyright (c) 2015 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
+ * @copyright Copyright (c) 2016 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
  * @license   http://www.eyemaginetech.com/license.txt
  */
 
@@ -54,5 +54,34 @@ v.1.0.1: September 5, 2015
   - Added redirect to search results page for name when product is not available
   - Minor bug fixes
   
+
 v.1.0.0: July 8, 2015
   - Initial release.
+
+
+v.1.0.3: July 7, 2014
+  - Fixed package definition 
+
+
+v.1.0.5: Aug 31, 2015
+  - Fixed product image display related issue 
+
+
+v.1.1.0: Sep 11, 2015
+  - Added sync for newsletter subscribers
+  - Fixed sync for the address data
+
+
+v.1.1.1: Oct 05, 2015
+  - Fixed 404 error message 
+
+
+v.1.1.2: Dec 04, 2015
+  - Fixed wishlist syncing
+  - Fixed newsletter syncing
+
+
+v.1.1.3: June 14, 2016
+  - Fixed performance issue for abandoned cart data
+  - Fixed notification message for unavailable products
+  - Added multi-store support

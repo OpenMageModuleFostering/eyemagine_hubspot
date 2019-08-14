@@ -7,7 +7,7 @@
  * @author    EYEMAGINE <magento@eyemaginetech.com>
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
- * @copyright Copyright (c) 2015 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
+ * @copyright Copyright (c) 2016 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
  * @license   http://www.eyemaginetech.com/license.txt
  */
 
@@ -38,7 +38,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
     const MAX_ASSOC_PRODUCT_LIMIT              = 10;
     const IS_ABANDONED_IN_SECS                 = 3600;
     const LONG_DATE_FORMAT                     = 'l, F j, Y \a\t h:i A \U\T\C';
-
+    const IS_MULTISTORE						   = FALSE;
 
     /**
      * Generate a list of customers updated since start date
@@ -52,6 +52,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
         try {
             $request       = $this->getRequest();
             $helper        = Mage::helper('eyehubspot');
+            $multistore    = $request->getParam ('multistore', self::IS_MULTISTORE );
             $maxperpage    = $request->getParam('maxperpage', self::MAX_CUSTOMER_PERPAGE);
             $start         = date('Y-m-d H:i:s', $request->getParam('start', 0));
             $end           = date('Y-m-d H:i:s', time() - 300);
@@ -71,7 +72,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
                 ->setPageSize($maxperpage);
 
             // only add the filter if website id > 0
-            if ($websiteId) {
+            if (!($multistore) && $websiteId) {
                 $collection->addFieldToFilter('website_id', array('eq' => $websiteId));
             }
 
@@ -128,6 +129,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
         try {
             $request       = $this->getRequest();
             $helper        = Mage::helper('eyehubspot');
+            $multistore    = $request->getParam ('multistore', self::IS_MULTISTORE );
             $maxperpage    = $request->getParam('maxperpage', self::MAX_ORDER_PERPAGE);
             $maxAssociated = $request->getParam('maxassoc', self::MAX_ASSOC_PRODUCT_LIMIT);
             $start         = date('Y-m-d H:i:s', $request->getParam('start', 0));
@@ -149,7 +151,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
                 ->setPageSize($maxperpage);
 
             // only add the filter if store id > 0
-            if ($storeId) {
+            if (!($multistore) && $storeId) {
                 $collection->addFieldToFilter('store_id', array('eq' => $storeId));
             }
 
@@ -167,7 +169,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
                 $result['items']            = array();
 
                 foreach ($order->getAllItems() as $item) {
-                    $helper->loadCatalogData($item, $storeId, $websiteId, $maxAssociated);
+                    $helper->loadCatalogData($item, $storeId, $websiteId, $multistore, $maxAssociated);
                     $result['items'][] = $helper->convertAttributeData($item);
                 }
 
@@ -202,6 +204,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
     
     	try {
     		$request       = $this->getRequest();
+    		$multistore    = $request->getParam ('multistore', self::IS_MULTISTORE );
      		$maxperpage    = $request->getParam('maxperpage', self::MAX_SUBSCRIBER_PERPAGE);
     		$lastSubscriberId = $request->getParam('id', '0');
     		$start         =  $request->getParam('start')?date('Y-m-d H:i:s', $request->getParam('start')):'0';
@@ -230,7 +233,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
     	
     
     		// only add the filter if store id > 0
-    		if ($storeId) {
+    		if (!($multistore) && $storeId) {
     			$collection->addFieldToFilter('store_id', array('eq' => $storeId));
     		}
     
@@ -261,87 +264,96 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
     /**
      * Loads all abandoned carts (only those created by registered customers)
      */
-    public function getabandonedAction()
+ public function getabandonedAction()
     {
-        if (!$this->_authenticate()) {
-            return;
-        }
-
-        try {
-            $request       = $this->getRequest();
-            $helper        = Mage::helper('eyehubspot');
-            $maxperpage    = $request->getParam('maxperpage', self::MAX_ORDER_PERPAGE);
-            $maxAssociated = $request->getParam('maxassoc', self::MAX_ASSOC_PRODUCT_LIMIT);
-            $start         = date('Y-m-d H:i:s', $request->getParam('start', 0));
-            $end           = date('Y-m-d H:i:s', time() - $request->getParam('offset', self::IS_ABANDONED_IN_SECS));
-            $websiteId     = Mage::app()->getWebsite()->getId();
-            $store         = Mage::app()->getStore();
-            $storeId       = Mage::app()->getStore()->getId();
-            $custGroups    = $helper->getCustomerGroups();
-            $collection    = Mage::getModel('sales/quote')->getCollection();
-            $returnData    = array();
-
-            // setup the query and page size
-            $collection->addFieldToFilter('updated_at', array(
-                    'from' => $start,
-                    'to'   => $end,
-                    'date' => true
-                ))
-                ->addFieldToFilter('is_active', array('neq' => 0))
-                ->addFieldToFilter('customer_email', array('like' => '%@%'))
-                ->addFieldToFilter('items_count', array('gt' => 0))
-                ->setOrder('updated_at', Varien_Data_Collection::SORT_ORDER_ASC)
-                ->setPageSize($maxperpage);
-
-            // only add the filter if store id > 0
-            if ($storeId) {
+    	if (!$this->_authenticate()) {
+    		return;
+    	}
+    
+    	try {
+    		$request       = $this->getRequest();
+    		$helper        = Mage::helper('eyehubspot');
+    		$maxperpage    = $request->getParam('maxperpage', self::MAX_ORDER_PERPAGE);
+    		$multistore    = $request->getParam ('multistore', self::IS_MULTISTORE );
+    		$maxAssociated = $request->getParam('maxassoc', self::MAX_ASSOC_PRODUCT_LIMIT);
+    		$start         = date('Y-m-d H:i:s', $request->getParam('start', 0));
+    		$end           = date('Y-m-d H:i:s', time() - $request->getParam('offset', self::IS_ABANDONED_IN_SECS));
+    		$websiteId     = Mage::app()->getWebsite()->getId();
+    		$store         = Mage::app()->getStore();
+    		$storeId       = Mage::app()->getStore()->getId();
+    		$custGroups    = $helper->getCustomerGroups();
+    		$collection    = Mage::getModel('sales/quote')->getCollection();
+    		$returnData    = array();
+    
+    		// setup the query and page size
+    		$collection->addFieldToFilter('updated_at', array(
+    				'from' => $start,
+    				'to'   => $end,
+    				'date' => true
+    		))
+    		->addFieldToFilter('is_active', array('neq' => 0))
+    		->addFieldToFilter('customer_email', array('like' => '%@%'))
+    		->addFieldToFilter('items_count', array('gt' => 0))
+    		->setOrder('updated_at', Varien_Data_Collection::SORT_ORDER_ASC)
+    		->setPageSize($maxperpage);
+    
+    	    // only add the filter if store id > 0
+            if (!($multistore) && $storeId) {
                 $collection->addFieldToFilter('store_id', array('eq' => $storeId));
             }
-
-            foreach ($collection as $cart) {
-                $result   = $helper->convertAttributeData($cart);
-                $groupId  = (int)$cart->getCustomerGroupId();
-
-                if (isset($custGroups[$groupId])) {
-                    $result['customer_group'] = $custGroups[$groupId];
-                } else {
-                    $result['customer_group'] = 'Guest';
-                }
-
-                $result['website_id']       = $websiteId;
-                $result['store_url']        = $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
-                $result['media_url']        = $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA);
-                $result['shipping_address'] = $helper->convertAttributeData($cart->getShippingAddress());
-                $result['billing_address']  = $helper->convertAttributeData($cart->getBillingAddress());
-                $result['items']            = array();
-
-                foreach ($cart->getAllItems() as $item) {
-                    $helper->loadCatalogData($item, $storeId, $websiteId, $maxAssociated);
-                    $result['items'][] = $helper->convertAttributeData($item);
-                }
-
-                // make sure there are items before adding to return
-                if (count($result['items'])) {
-                    $returnData[$cart->getId()] = $result;
-                }
-            }
-        } catch (Exception $e) {
-            $this->_outputError(
-                self::ERROR_CODE_UNKNOWN_EXCEPTION,
-                'Unknown exception on request',
-                $e
-            );
-            return;
-        }
-
-        $this->_outputJson(array(
-            'abandoned'     => $returnData,
-            'website'       => $websiteId,
-            'store'         => $storeId
-        ));
+    
+    		foreach ($collection as $cart) {
+    			$result   = $helper->convertAttributeData($cart);
+    			$groupId  = (int)$cart->getCustomerGroupId();
+    
+    			if (isset($custGroups[$groupId])) {
+    				$result['customer_group'] = $custGroups[$groupId];
+    			} else {
+    				$result['customer_group'] = 'Guest';
+    			}
+    
+    			$result['website_id']       = $websiteId;
+    			$result['store_url']        = $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB);
+    			$result['media_url']        = $store->getBaseUrl(Mage_Core_Model_Store::URL_TYPE_MEDIA);
+    			$result['shipping_address'] = $helper->convertAttributeData($cart->getShippingAddress());
+    			$result['billing_address']  = $helper->convertAttributeData($cart->getBillingAddress());
+    			$result['items']            = array();
+    
+    			$cartItems = Mage::getModel('sales/quote_item')->getCollection()
+    			->setQuote($cart)
+    			->setOrder('base_price', Varien_Data_Collection::SORT_ORDER_DESC)
+    			->setPageSize($maxAssociated);
+    
+    			 
+    			foreach ($cartItems as $item) {
+    				if (!$item->isDeleted() && !$item->getParentItemId()) {
+    					$helper->loadCatalogData($item, $storeId, $websiteId, $maxAssociated);
+    					$result['items'][] = $helper->convertAttributeData($item);
+    
+    				}
+    			}
+    
+    
+    			// make sure there are items before adding to return
+    			if (count($result['items'])) {
+    				$returnData[$cart->getId()] = $result;
+    			}
+    		}
+    	} catch (Exception $e) {
+    		$this->_outputError(
+    				self::ERROR_CODE_UNKNOWN_EXCEPTION,
+    				'Unknown exception on request',
+    				$e
+    		);
+    		return;
+    	}
+    
+    	$this->_outputJson(array(
+    			'abandoned'     => $returnData,
+    			'website'       => $websiteId,
+    			'store'         => $storeId
+    	));
     }
-
-
     /**
      * Retrieves recent activity for customers (sorted by last visit date)
      */
@@ -354,6 +366,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
         try {
             $request       = $this->getRequest();
             $helper        = Mage::helper('eyehubspot');
+            $multistore    = $request->getParam ('multistore', self::IS_MULTISTORE );
             $maxperpage    = $request->getParam('maxperpage', self::MAX_CUSTOMER_PERPAGE);
             $maxAssociated = $request->getParam('maxassoc', self::MAX_ASSOC_PRODUCT_LIMIT);
             $start         = date('Y-m-d H:i:s', $request->getParam('start', 0));
@@ -391,7 +404,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
                     )
                    ->where('lc.customer_id > 0');
                     // only add the filter if website id > 0
-                    if ($websiteId) {
+                    if (!($multistore) && $websiteId) {
                     	$select->where("c.website_id = '$websiteId'");
                     }
                     $select->where("lv.last_visit_at >= '$start'")
@@ -415,9 +428,9 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
                     $log->addData($temp->getData());
                     $log->setFirstVisitAt($temp->getFirstVisitAt());
                 } else {
-                    $log->setViewed($helper->getProductViewedList($customerId, $maxAssociated));
-                    $log->setCompare($helper->getProductCompareList($customerId, $maxAssociated));
-                    $log->setWishlist($helper->getProductWishlist($customerId, $maxAssociated));
+                    $log->setViewed($helper->getProductViewedList($customerId, $multistore, $maxAssociated));
+                    $log->setCompare($helper->getProductCompareList($customerId, $multistore, $maxAssociated));
+                    $log->setWishlist($helper->getProductWishlist($customerId, $multistore, $maxAssociated));
                 }
 
                 $log->unsetData('session_id');

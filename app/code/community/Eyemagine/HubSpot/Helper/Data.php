@@ -7,7 +7,7 @@
  * @author    EYEMAGINE <magento@eyemaginetech.com>
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
- * @copyright Copyright (c) 2015 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
+ * @copyright Copyright (c) 2016 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
  * @license   http://www.eyemaginetech.com/license.txt
  */
 
@@ -100,7 +100,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
      * @param  int $websiteId
      * @param  int $maxLimit
      */
-    public function loadCatalogData($item, $storeId, $websiteId, $maxLimit = 10)
+    public function loadCatalogData($item, $storeId, $websiteId, $multistore, $maxLimit = 10)
     {
         $product     = null;
         $categories  = array();
@@ -128,7 +128,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
 
                 foreach ($relatedCollection as $p) {
                     $websiteIds = $p->getWebsiteIds();
-                    if (in_array($websiteId, $websiteIds)) {
+                    if (in_array($websiteId, $websiteIds) || $multistore) {
                         $related[$p->getId()] = $this->convertAttributeData($p);
                     }
                 }
@@ -144,7 +144,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
 
                 foreach ($upsellCollection as $p) {
                     $websiteIds = $p->getWebsiteIds();
-                    if (in_array($websiteId, $websiteIds)) {
+                    if (in_array($websiteId, $websiteIds) || $multistore) {
                         $upsells[$p->getId()] = $this->convertAttributeData($p);
                     }
                 }
@@ -158,7 +158,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
 
                 foreach ($categoryCollection as $category) {
                     $storeIds = $category->getStoreIds();
-                    if (in_array($storeId, $storeIds)) {
+                    if (in_array($storeId, $storeIds) || $multistore) {
                         $categories[$category->getId()] = $this->convertAttributeData($category);
                     }
                 }
@@ -179,7 +179,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
      * @param  int $customerId
      * @return array
      */
-    public function getProductViewedList($customerId, $limit = 10)
+    public function getProductViewedList($customerId, $multistore, $limit = 10)
     {
         $customerId  = (int)$customerId;
         $storeId     = Mage::app()->getStore()->getId();
@@ -198,7 +198,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
                     ->setPageSize($maxpagesize)
                     ->setOrder('logged_at', Varien_Data_Collection::SORT_ORDER_DESC);
 
-                if ($storeId) {
+                if (!($multistore) && $storeId) {
                     $collection->addStoreFilter(array($storeId));
                 }
 
@@ -218,7 +218,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
                         ->addAttributeToSelect('url_path')
                         ->addIdFilter($productIds);
 
-                    if ($storeId) {
+                    if (!($multistore) && $storeId) {
                         $productCollection->setStoreId($storeId)
                             ->addStoreFilter($storeId);
                     }
@@ -242,7 +242,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
      * @param  int $customerId
      * @return array
      */
-    public function getProductCompareList($customerId, $limit = 10)
+    public function getProductCompareList($customerId, $multistore, $limit = 10)
     {
         $customerId  = (int)$customerId;
         $storeId     = Mage::app()->getStore()->getId();
@@ -264,7 +264,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
                     ->addAttributeToSelect('status')
                     ->setOrder('catalog_compare_item_id', 'DESC');
 
-                if ($storeId) {
+                if (!($multistore) && $storeId) {
                     $collection->setStoreId($storeId)
                         ->addStoreFilter($storeId);
                 }
@@ -287,7 +287,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
      * @param  int $customerId
      * @return array
      */
-    public function getProductWishlist($customerId, $limit = 10)
+    public function getProductWishlist($customerId, $multistore, $limit = 10)
     {
         $customerId  = (int)$customerId;
         $storeId     = Mage::app()->getStore()->getId();
@@ -296,10 +296,12 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
 
         if ($customerId) {
             try {
-                $model = Mage::getModel('wishlist/wishlist')->loadByCustomer($customerId, true);
+               
                 $wishlist = Mage::getModel('wishlist/wishlist')->loadByCustomer($customerId, true); 
                 $wishListItemCollection = $wishlist->getItemCollection();
-               
+                if (!($multistore) && $storeId) {
+                	$wishListItemCollection->addStoreFilter($storeId);
+                }
                 foreach ($wishListItemCollection as $item)
                 {
                 	 $returnData[]['name']= $item->getName();  // Get Product Name
