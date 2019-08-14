@@ -247,7 +247,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
                 $result['items']            = array();
 
                 foreach ($cart->getAllItems() as $item) {
-                    $helper->loadCatalogData($item, $cartStoreId, $websiteId, $maxAssociated);
+                    $helper->loadCatalogData($item, $storeId, $websiteId, $maxAssociated);
                     $result['items'][] = $helper->convertAttributeData($item);
                 }
 
@@ -320,8 +320,12 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
                         'p.url_id = lv.last_url_id',
                         array('last_url' => 'p.url', 'last_referer' => 'p.referer')
                     )
-                    ->where('lc.customer_id > 0')
-                    ->where("lv.last_visit_at >= '$start'")
+                   ->where('lc.customer_id > 0');
+                    // only add the filter if website id > 0
+                    if ($websiteId) {
+                    	$select->where("c.website_id = '$websiteId'");
+                    }
+                    $select->where("lv.last_visit_at >= '$start'")
                     ->where("lv.last_visit_at < '$end'")
                     ->order('lv.last_visit_at')
                     ->limit($maxperpage);

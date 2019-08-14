@@ -127,7 +127,7 @@ class Eyemagine_HubSpot_LinkController extends Mage_Core_Controller_Front_Action
         // add the size header, and output
         if ($file && file_exists($file)) {
             header('Content-Length: ' . filesize($file));
-            ob_clean();
+            if (ob_get_level()) ob_end_clean();
             flush();
             readfile($file);
         } else {

@@ -199,7 +199,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
                     ->setOrder('logged_at', Varien_Data_Collection::SORT_ORDER_DESC);
 
                 if ($storeId) {
-                    $collection->addStoreFilter($storeId);
+                    $collection->addStoreFilter(array($storeId));
                 }
 
                 $productIds = array();
