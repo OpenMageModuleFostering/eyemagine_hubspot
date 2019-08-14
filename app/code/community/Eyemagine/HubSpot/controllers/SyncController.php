@@ -117,7 +117,8 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
         $this->_outputJson(array(
             'customers'     => $customerData,
             'website'       => $websiteId,
-            'store'         => $storeId
+            'store'         => $storeId,
+ 	    'start'         => $start
         ));
     }
 
@@ -178,8 +179,16 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
                 $result['shipping_address'] = $helper->convertAttributeData($order->getShippingAddress());
                 $result['billing_address']  = $helper->convertAttributeData($order->getBillingAddress());
                 $result['items']            = array();
-
-                foreach ($order->getAllItems() as $item) {
+                $result['comment'] = $order->getStatusHistoryCollection()->getFirstItem()->getComment();
+              
+                
+                $ordertItems = $order->getItemsCollection()
+                
+                ->setOrder('base_price', Varien_Data_Collection::SORT_ORDER_DESC)
+                ->setPageSize($maxAssociated);
+                
+                
+                foreach ($ordertItems as $item) {
                     $helper->loadCatalogData($item, $storeId, $websiteId, $multistore, $maxAssociated);
                     $result['items'][] = $helper->convertAttributeData($item);
                 }
@@ -197,7 +206,8 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
 
         $this->_outputJson(array(
             'orders'        => $ordersData,
-            'stores'         => $stores
+            'stores'        => $stores,
+	    'start'         => $start
         ));
     }
     

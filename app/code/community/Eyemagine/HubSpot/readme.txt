@@ -43,8 +43,9 @@ COMPATIBILITY:
 -------------------------------------------------------------------------------
 RELEASE NOTES:
 -------------------------------------------------------------------------------
-v.1.1.6: Sep 8, 2016
-- Improved performance for downloading order data.
+v.1.1.7: Oct 28, 2016
+- Added sync for cross-sell related data.
+- Added sync for order comments and order status
 
 v.1.1.5: Sep 8, 2016
 - Fixed product and media url for multistores.

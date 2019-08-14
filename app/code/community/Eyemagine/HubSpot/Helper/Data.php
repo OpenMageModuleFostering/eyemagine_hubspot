@@ -128,6 +128,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
         $categories  = array();
         $related     = array();
         $upsells     = array();
+        $crossSells      = array();
 
         // load product details
         if ($item->getProductId()) {
@@ -170,6 +171,24 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
                         $upsells[$p->getId()] = $this->convertAttributeData($p);
                     }
                 }
+                
+                
+                $crossSellCollection = $product->getCrossSellProductCollection()
+                ->addAttributeToSelect('name')
+                ->addAttributeToSelect('sku')
+                ->addAttributeToSelect('url_path')
+                ->addAttributeToSelect('image')
+                ->addAttributeToSelect('visibility')
+                ->addAttributeToFilter('status', Mage_Catalog_Model_Product_Status::STATUS_ENABLED)
+                ->setPageSize($maxLimit);
+                
+                foreach ($crossSellCollection as $p) {
+                    $websiteIds = $p->getWebsiteIds();
+                      if (in_array($websiteId, $websiteIds) || $multistore) {
+                        $crossSells[$p->getId()] = $this->convertAttributeData($p);
+                    }
+                }
+                
 
                 $categoryCollection = $product->getCategoryCollection()
                     ->addAttributeToSelect('name')
@@ -187,6 +206,7 @@ class Eyemagine_HubSpot_Helper_Data extends Mage_Core_Helper_Abstract
 
                 $product->setRelatedProducts($related);
                 $product->setUpSellProducts($upsells);
+                $product->setCrossSellProducts($crossSells);
             }
 
             $item->setData('product', $product);

@@ -83,60 +83,71 @@ class Eyemagine_HubSpot_LinkController extends Mage_Core_Controller_Front_Action
             ->setRedirect($url, ($permanent) ? 301 : 302)
             ->sendResponse();
     }
-    
-    
+
     /**
      * Resamples the product image and returns the contents as raw data
      */
     public function imageAction()
     {
-        // set up min max of values for the resize (smallest 50, largest 640)
-        $size       = (int)($this->getRequest()->getParam('size'));
-        $size       = ($size > 0) ? min(max(50, $size), 640) : 100;
-        
-        // render the thumbnail and get the server path 
-        $product    = $this->_initProduct(false);
-        $helper     = Mage::helper('catalog/image');
-        $url        = $helper->init($product, 'thumbnail')->resize($size ? min(max(50, $size), 640) : 100);   
-        $serverPath = str_replace(Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB), '', (string)$url);
-        $file       = @realpath($serverPath);
-        $pathinfo   = pathinfo($url);
-        
-        // add the mime-type header
-        switch ($pathinfo['extension']) {
-        	case 'jpg':
-        	    header('Content-Type: image/jpeg');
-        	    break;
-    	    case 'png':
-    	        header('Content-Type: image/png');
-    	        break;
-	        case 'gif':
-	            header('Content-Type: image/gif');
-	            break;
-        	case 'xbm':
-    	        header('Content-Type: image/x-xbitmap');
-    	        break;
-	        case 'wbpm':
-	            header('Content-Type: image/vnd.wap.wbmp');
-	            break;
-        	default:
-        		header('Content-Type: image/jpeg');
-        		break;
+        try {
+            // set up min max of values for the resize (smallest 50, largest 640)
+            $size = (int) ($this->getRequest()->getParam('size'));
+            $size = ($size > 0) ? min(max(50, $size), 640) : 100;
+            
+            // render the thumbnail and get the server path
+            $product = $this->_initProduct(false);
+            $helper = Mage::helper('catalog/image');
+            $url = $helper->init($product, 'thumbnail')->resize($size ? min(max(50, $size), 640) : 100);
+            $serverPath = str_replace(Mage::getBaseUrl(Mage_Core_Model_Store::URL_TYPE_WEB), '', (string) $url);
+            $pathinfo = pathinfo($url);
+            $file = @realpath($serverPath);
+            // add the mime-type header
+            switch ($pathinfo['extension']) {
+                case 'jpg':
+                    $content_type = 'image/jpeg';
+                    break;
+                case 'png':
+                    $content_type = 'image/png';
+                    break;
+                case 'gif':
+                    $content_type = 'image/gif';
+                    break;
+                case 'xbm':
+                    $content_type = 'image/x-xbitmap';
+                    break;
+                case 'wbpm':
+                    $content_type = 'image/vnd.wap.wbmp';
+                    break;
+                default:
+                    $content_type = 'image/jpeg';
+                    break;
+            }
+            
+            // add the size header, and output
+            if ($file && file_exists($file)) {
+                header('Content-Type: ' . $content_type);
+                header('Content-Length: ' . filesize($file));
+                if (ob_get_level())
+                    ob_end_clean();
+                flush();
+                readfile($file);
+            } else {
+                if ($url && $content_type) {
+                    
+                    $this->getResponse()
+                        ->setHeader('Content-Type', $content_type)
+                        ->setBody(file_get_contents((string) $url));
+                }
+            }
+        } catch (Exception $e) {
+            
+            if ($url && $content_type) {
+                
+                $this->getResponse()
+                    ->setHeader('Content-Type', $content_type)
+                    ->setBody(file_get_contents((string) $url));
+            }
         }
-        
-        // add the size header, and output
-        if ($file && file_exists($file)) {
-            header('Content-Length: ' . filesize($file));
-            if (ob_get_level()) ob_end_clean();
-            flush();
-            readfile($file);
-        } else {
-            // alt delivery method that will take more system resources but is
-            // unlikely to fail on servers running OS versions other than Linux
-            echo file_get_contents($url);
-        }
-        
-        exit;
     }
     
     
