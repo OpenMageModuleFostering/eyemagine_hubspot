@@ -8,7 +8,7 @@
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
  * @copyright Copyright (c) 2016 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
- * @license   http://www.eyemaginetech.com/license.txt
+ * @license   http://www.eyemaginetech.com/license
  */
 
 /**
@@ -56,6 +56,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
             $maxperpage    = $request->getParam('maxperpage', self::MAX_CUSTOMER_PERPAGE);
             $start         = date('Y-m-d H:i:s', $request->getParam('start', 0));
             $end           = date('Y-m-d H:i:s', time() - 300);
+            $entityId = $request->getParam('id', '0');
             $websiteId     = Mage::app()->getWebsite()->getId();
             $storeId       = Mage::app()->getStore()->getId();
             $custGroups    = $helper->getCustomerGroups();
@@ -68,7 +69,11 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
                     'to'   => $end,
                     'date' => true
                 ))
+                ->addFieldToFilter('entity_id', array(
+                    'gt' => $entityId
+                ))
                 ->setOrder('updated_at', Varien_Data_Collection::SORT_ORDER_ASC)
+                ->setOrder('entity_id', Varien_Data_Collection::SORT_ORDER_ASC)
                 ->setPageSize($maxperpage);
 
             // only add the filter if website id > 0
@@ -134,6 +139,7 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
             $maxAssociated = $request->getParam('maxassoc', self::MAX_ASSOC_PRODUCT_LIMIT);
             $start         = date('Y-m-d H:i:s', $request->getParam('start', 0));
             $end           = date('Y-m-d H:i:s', time() - 300);
+            $entityId = $request->getParam('id', '0');
             $websiteId     = Mage::app()->getWebsite()->getId();
             $store         = Mage::app()->getStore();
             $storeId       = Mage::app()->getStore()->getId();
@@ -147,7 +153,11 @@ class Eyemagine_HubSpot_SyncController extends Mage_Core_Controller_Front_Action
                     'to'   => $end,
                     'date' => true
                 ))
+                ->addFieldToFilter('entity_id', array(
+                    'gt' => $entityId
+                ))
                 ->setOrder('updated_at', Varien_Data_Collection::SORT_ORDER_ASC)
+                ->setOrder('entity_id', Varien_Data_Collection::SORT_ORDER_ASC)
                 ->setPageSize($maxperpage);
 
             // only add the filter if store id > 0

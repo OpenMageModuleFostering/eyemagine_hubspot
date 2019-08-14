@@ -8,7 +8,7 @@
  * @category  Eyemagine
  * @package   Eyemagine_HubSpot
  * @copyright Copyright (c) 2016 EYEMAGINE Technology, LLC (http://www.eyemaginetech.com)
- * @license   http://www.eyemaginetech.com/license.txt
+ * @license   http://www.eyemaginetech.com/license
  */
 
 class Eyemagine_HubSpot_Block_Adminhtml_Frontend_Eyemagine_Support
